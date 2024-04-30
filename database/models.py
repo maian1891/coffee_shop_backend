@@ -1,4 +1,5 @@
 import os
+from flask_migrate import Migrate
 from sqlalchemy import Column, String, Integer
 from flask_sqlalchemy import SQLAlchemy
 import json
@@ -16,6 +17,7 @@ def setup_db(app):
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     db.app = app
     db.init_app(app)
+    migrate = Migrate(app, db)
 
 
 '''
@@ -30,13 +32,13 @@ def db_drop_and_create_all():
     db.drop_all()
     db.create_all()
     # add one demo row which is helping in POSTMAN test
-    drink = Drink(
-        title='water',
-        recipe='[{"name": "water", "color": "blue", "parts": 1}]'
-    )
+    # drink = Drink(
+    #     title='water',
+    #     recipe='[{"name": "water", "color": "blue", "parts": 1}]'
+    # )
 
 
-    drink.insert()
+    # drink.insert()
 # ROUTES
 
 '''
@@ -47,12 +49,16 @@ a persistent drink entity, extends the base SQLAlchemy Model
 
 class Drink(db.Model):
     # Autoincrementing, unique primary key
-    id = Column(Integer().with_variant(Integer, "sqlite"), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     # String Title
-    title = Column(String(80), unique=True)
+    title = db.Column(db.String(80), unique=True)
     # the ingredients blob - this stores a lazy json blob
     # the required datatype is [{'color': string, 'name':string, 'parts':number}]
-    recipe = Column(String(180), nullable=False)
+    recipe = db.Column(db.String(180), nullable=False)
+    
+    name = db.Column(db.String(80), nullable=False)
+    color = db.Column(db.String(80), nullable=False)
+    parts = db.Column(db.Integer, nullable=False)
 
     '''
     short()
@@ -65,7 +71,10 @@ class Drink(db.Model):
         return {
             'id': self.id,
             'title': self.title,
-            'recipe': short_recipe
+            'recipe': short_recipe,
+            'name': self.title,
+            'color': self.recipe.get('color'),
+            'parts': self.recipe.get('parts')
         }
 
     '''
@@ -77,7 +86,10 @@ class Drink(db.Model):
         return {
             'id': self.id,
             'title': self.title,
-            'recipe': json.loads(self.recipe)
+            'recipe': json.loads(self.recipe),
+            'name': self.title,
+            'color': self.recipe.get('color'),
+            'parts': self.recipe.get('parts')
         }
 
     '''

@@ -1,6 +1,4 @@
-import os
 from flask import Flask, request, jsonify, abort
-from sqlalchemy import exc
 import json
 from werkzeug.exceptions import HTTPException
 import traceback
@@ -11,6 +9,7 @@ from auth.auth import AuthError, requires_auth
 
 app = Flask(__name__)
 setup_db(app)
+app.app_context().push()
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 
